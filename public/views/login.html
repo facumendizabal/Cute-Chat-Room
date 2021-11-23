@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Room | Log In</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      padding: 0;
+      margin: 0;
+    }
+    
+    html {
+      font-size: 62.5%;
+      font-family: 'DM Sans', sans-serif;
+      scroll-behavior: smooth;
+      color: #F6F6F6;
+    }
+
+    header {
+      display: flex;
+      align-items: baseline;
+      justify-items: center;
+      width: 100%;
+      padding: 20px;
+      margin-bottom: 50px;
+      text-align: center;
+      background-color: #1e1e1e;
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      margin-right: 15px;
+    }
+
+    header a {
+      text-decoration: underline;
+      margin-right: 10px;
+      font-size: 2.0rem;
+      color: #F6F6F6;
+    }
+
+    body {
+      background-color: #111111;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 1.6rem;
+    }
+
+    #login-form_submit {
+      background-color: #d37702;
+      border: none;
+      color: #F6F6F6;
+      padding: 15px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+
+      font-size: 1.6rem;
+    }
+
+    .login-form_input-text {
+      border: none;
+      height: 40px;
+      width: 50vw;
+      padding: 10px;
+      margin-bottom: 10px;
+      background-color: #1e1e1e;
+      font-size: 1.6rem;
+      color: #F6F6F6;
+    }
+    .login-form_input-text:focus{
+      outline: none;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Chat Room</h1>
+    <a href="http://127.0.0.1:3000/home">Home</a>
+    <a href="http://127.0.0.1:3000/auth/signup">Sign Up</a>
+    <a href="http://127.0.0.1:3000/chat">Chat</a>
+  </header>
+  <h1>Log In</h1>
+  <div id="login-form">
+    <label for="username">Username:</label><br>
+    <input type="text" id="login-form_username" class="login-form_input-text" name="username" /><br>
+
+    <label for="password">Password:</label><br>
+    <input type="password" id="login-form_password" class="login-form_input-text" name="password" /><br>
+    <input type="button" id="login-form_submit" value="Log In" />
+    <p id="login-form_message"></p>
+  </div>
+  <p id="jwt"></p>
+  <script>
+
+    document.querySelector("#login-form_submit").addEventListener("click", async () => {
+      const formUsername = document.querySelector("#login-form_username");
+      const formPassword = document.querySelector("#login-form_password");
+      const message = document.querySelector("#login-form_message");
+
+      // validate form
+      if ( 
+        formPassword.value === "" ||
+        formUsername.value === ""
+      ) {
+        message.innerHTML = "Please fill all fields";
+        return;
+      }
+
+      const response = await fetch("http://127.0.0.1:3000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username: formUsername.value, password: formPassword.value })
+      });
+
+      const data = await response.json();
+      
+      if (!data.error) {
+        window.location.replace("http://127.0.0.1:3000/chat");
+      } else {
+        message.innerHTML = data.body;
+      }
+
+      formPassword.value = "";
+      formUsername.value = "";
+    });
+
+
+  </script>
+</body>
+
+</html>

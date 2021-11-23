@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat Room | Chat</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      padding: 0;
+      margin: 0;
+    }
+    
+    html {
+      font-size: 62.5%;
+      font-family: 'DM Sans', sans-serif;
+      scroll-behavior: smooth;
+      color: #F6F6F6;
+    }
+
+    header {
+      display: flex;
+      align-items: baseline;
+      justify-items: center;
+      width: 100%;
+      padding: 20px;
+      margin-bottom: 10px;
+      text-align: center;
+      background-color: #1e1e1e;
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      margin-right: 15px;
+    }
+
+    header a {
+      text-decoration: underline;
+      margin-right: 10px;
+      font-size: 2.0rem;
+      color: #F6F6F6;
+    }
+
+    body {
+      background-color: #111111;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #messages-slider {
+      width: 80%;
+      height: 80vh;
+      overflow: hidden;
+    }
+
+    #messages-container {
+      height: 80vh;
+      scroll-snap-type: y mandatory;
+
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .messages-container_message {
+      background-color: #1e1e1e;
+      padding: 15px;
+      margin: 10px;
+
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      font-size: 1.6rem;
+    }
+  
+    #message-form {
+      background-color: #111111;
+      margin-top: 10px;
+    }
+
+    #message-form_submit {
+      height: 40px;
+      width: 70px;
+      background-color: #d37702;
+      border: none;
+      color: #F6F6F6;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+
+      font-size: 1.6rem;
+    }
+
+    #message-form_text {
+      border: none;
+      height: 40px;
+      width: 50vw;
+      padding: 10px;
+      margin-right: 10px;
+      background-color: #1e1e1e;
+      font-size: 1.6rem;
+      color: #F6F6F6;
+    }
+
+    #message-form_text:focus {
+      outline: none;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Chat Room</h1>
+    <a href="http://127.0.0.1:3000/api/auth/logout">Log Out</a>
+  </header>
+
+  <div id="messages-slider">
+    <div id="messages-container"></div>
+  </div>
+  <br />
+  <div id="message-form">
+    <input type="text" id="message-form_text" placeholder="Message" />
+    <input type="button" id="message-form_submit" value="Send" />
+  </div>
+  <script>
+    const messagesSlider = document.querySelector("#messages-slider");
+    const messageFormSubmit = document.querySelector("#message-form_submit");
+    const messagesContainer = document.getElementById("messages-container");
+    const messageFormText = document.querySelector("#message-form_text");
+
+    let socket = io.connect("http://127.0.0.1:3000/", { forceNew: false });
+
+    async function getMessages() {
+      const response = await fetch("http://127.0.0.1:3000/api/message");
+      const data = await response.json();
+      return await data.body
+    }
+
+    let messagesList;
+    window.addEventListener('load', async (event) => {
+      const response = await getMessages();
+      messagesList = await response;
+      await render(messagesList)
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
+
+    socket.on("messages", function (data) {
+      messagesList.push(data);
+      render(messagesList);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
+
+    function render(data) {
+      let html = data
+        .map(function (elem, index) {
+          return `<div class="messages-container_message">
+              <strong>${elem.user_from.username}</strong>
+              <p>${elem.text}</p>
+            </div>`;
+        })
+        .join(" ");
+      messagesContainer.innerHTML = html;
+    }
+
+    function sendMesssage() {
+      if (messageFormText.value === "") return
+
+      socket.emit("new_message", messageFormText.value);
+      messageFormText.value = ""
+      return;
+    }
+    // Send message events, on click and on enter
+    messageFormSubmit.addEventListener("click", () => sendMesssage());
+
+    messageFormText.addEventListener("keyup", ({ key }) => {
+      if (key === "Enter") {
+        sendMesssage()    
+      }
+    })
+  </script>
+</body>
+
+</html>

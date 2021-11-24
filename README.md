@@ -1,2 +1,2 @@
 # Cute-Chat-Room
-A node.js chat room web app implemented with socket.io, with JWT based authentication.
+A node.js express web chat room implemented with socket.io, and JWT based authentication. 
